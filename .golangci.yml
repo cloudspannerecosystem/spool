@@ -1,0 +1,18 @@
+run:
+  concurrency: 4
+  deadline: 1m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - model
+    - tools
+  skip-files:
+    - assets.go
+linters:
+  enable-all: true
+  disable:
+    - gochecknoglobals
+    - gocritic
+    - lll
+    - unparam
+    - funlen
