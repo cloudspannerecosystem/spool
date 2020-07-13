@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool/model"
 )
 
 func TestFilterNotUsedWithin(t *testing.T) {

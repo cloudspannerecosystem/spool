@@ -1,4 +1,4 @@
-module github.com/gcpug/spool
+module github.com/cloudspannerecosystem/spool
 
 go 1.12
 

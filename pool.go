@@ -10,7 +10,7 @@ import (
 
 	"cloud.google.com/go/spanner"
 	admin "cloud.google.com/go/spanner/admin/database/apiv1"
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool/model"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 

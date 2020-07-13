@@ -1,29 +1,32 @@
 # spool
 
-[![CircleCI](https://circleci.com/gh/gcpug/spool.svg)](https://circleci.com/gh/gcpug/spool)
+[![CircleCI](https://circleci.com/gh/cloudspannerecosystem/spool.svg)](https://circleci.com/gh/cloudspannerecosystem/spool)
 
 A CLI tool to manage [Cloud Spanner](https://cloud.google.com/spanner) databases for testing.
 
 ![spool](https://user-images.githubusercontent.com/2238852/68204102-a0764580-000a-11ea-879b-1acaf1c699c8.gif)
 
+Please feel free to report issues and send pull requests, but note that this
+application is not officially supported as part of the Cloud Spanner product.
+
 ## Motivation
 
-There wasn't an emulator for Cloud Spanner like [Cloud Datastore](https://cloud.google.com/datastore/docs/tools/datastore-emulator) when I started to develop spool.
-It is inefficient that create a new test database every running.
-This tool enables us to reuse the test databases in CI.
-
-Currently, I recommend [handy-spanner](https://github.com/gcpug/handy-spanner) if you want to use an emulator.
+When the development of spool started, the [Cloud Spanner
+Emulator](https://cloud.google.com/spanner/docs/emulator) wasn't available yet.
+When using Cloud Spanner instances for continuous integration tests, it is
+inefficient to create a new test database on every run.
+This tool lets you reuse test databases in CI tests.
 
 ## Installation
 
 ```shell
-$ go get -u github.com/gcpug/spool/cmd/spool
+$ go get -u github.com/cloudspannerecosystem/spool/cmd/spool
 ```
 
 ## Setup
 
 Spool requires a database for metadata to manage databases.
-Following command setups the database.
+The following command sets up the database.
 
 ```shell
 $ spool --project=${PROJECT} --instance=${INSTANCE} --database=${SPOOL_DATABASE} setup
@@ -94,7 +97,7 @@ jobs:
             echo "machine github.com login ${GITHUB_TOKEN}" > ~/.netrc
       - run:
           name: install spool
-          command: go get -u github.com/gcpug/spool/cmd/spool
+          command: go get -u github.com/cloudspannerecosystem/spool/cmd/spool
       - run:
           name: get database for testing
           command: |
@@ -126,7 +129,7 @@ jobs:
             echo "machine github.com login ${GITHUB_TOKEN}" > ~/.netrc
       - run:
           name: install spool
-          command: go get -u github.com/gcpug/spool/cmd/spool
+          command: go get -u github.com/cloudspannerecosystem/spool/cmd/spool
       - run:
           name: cleanup databases
           command: spool --project=${PROJECT} --instance=${INSTANCE} --database=${SPOOL_DATABASE} --schema=${PATH_TO_SCHEMA_FILE} clean --all --force --ignore-used-within-days=7

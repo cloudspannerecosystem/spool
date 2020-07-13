@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/gcpug/spool"
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool"
+	"github.com/cloudspannerecosystem/spool/model"
 )
 
 const (

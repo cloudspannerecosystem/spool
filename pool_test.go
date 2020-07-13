@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/spanner"
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool/model"
 )
 
 func newPool(ctx context.Context, t *testing.T, ddl []byte) *Pool {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/spanner"
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool/model"
 )
 
 func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, func()) {

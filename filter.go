@@ -3,7 +3,7 @@ package spool
 import (
 	"time"
 
-	"github.com/gcpug/spool/model"
+	"github.com/cloudspannerecosystem/spool/model"
 )
 
 // FilterNotUsedWithin returns a function which reports whether sdb is not used within d.

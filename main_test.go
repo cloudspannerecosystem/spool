@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gcpug/handy-spanner/fake"
+	"github.com/cloudspannerecosystem/handy-spanner/fake"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
