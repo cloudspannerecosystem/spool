@@ -80,7 +80,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: golang:1.10-stretch
+      - image: golang:1.13-stretch
         environment:
           PROJECT: project
           INSTANCE: instance
@@ -113,7 +113,7 @@ jobs:
 
   cleanup-old-test-db:
     docker:
-      - image: golang:1.10-stretch
+      - image: golang:1.13-stretch
         environment:
           PROJECT: project
           INSTANCE: instance
