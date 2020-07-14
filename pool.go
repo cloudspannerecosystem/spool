@@ -40,7 +40,7 @@ func (s State) String() string {
 	return "unknown"
 }
 
-// Pool represents a spanner database pool.
+// Pool represents a Spanner database pool.
 type Pool struct {
 	client        *spanner.Client
 	adminClient   *admin.DatabaseAdminClient
