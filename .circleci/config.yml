@@ -23,7 +23,7 @@ common_steps:
 jobs:
   setup:
     docker:
-      - image: golang:1.13-stretch
+      - image: golang:1.17-stretch
     working_directory: /go/src/github.com/cloudspannerecosystem/spool
     steps:
       - checkout
@@ -39,7 +39,7 @@ jobs:
 
   lint:
     docker:
-      - image: golang:1.13-stretch
+      - image: golang:1.17-stretch
     working_directory: /go/src/github.com/cloudspannerecosystem/spool
     steps:
       - checkout
@@ -51,7 +51,7 @@ jobs:
 
   test:
     docker:
-      - image: golang:1.13-stretch
+      - image: golang:1.17-stretch
         environment:
           GOCACHE: /tmp/go/cache
     working_directory: /go/src/github.com/cloudspannerecosystem/spool

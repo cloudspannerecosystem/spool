@@ -22,7 +22,7 @@ ${LINT_BIN}:
 
 ${WRENCH_BIN}:
 	@mkdir -p ${BIN_DIR}
-	@go build -o ${WRENCH_BIN} github.com/mercari/wrench
+	@go build -o ${WRENCH_BIN} github.com/cloudspannerecosystem/wrench
 
 
 .PHONY: install
