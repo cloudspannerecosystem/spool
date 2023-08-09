@@ -28,7 +28,7 @@ require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/OpenPeeDeeP/depguard v1.0.1 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
+	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/ashanbrown/forbidigo v1.2.0 // indirect
 	github.com/ashanbrown/makezero v0.0.0-20210520155254-b6261585ddde // indirect
@@ -129,9 +129,9 @@ require (
 	github.com/phayes/checkstyle v0.0.0-20170904204023-bfd46e6a821d // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/polyfloyd/go-errorlint v0.0.0-20210722154253-910bb7978349 // indirect
-	github.com/prometheus/client_golang v1.7.1 // indirect
+	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.10.0 // indirect
+	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/quasilyte/go-ruleguard v0.3.13 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95 // indirect
