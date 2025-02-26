@@ -5,7 +5,6 @@ run:
   tests: true
   skip-dirs:
     - model
-    - tools
   skip-files:
     - assets.go
 linters:
