@@ -2,7 +2,7 @@ package spool
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -227,7 +227,7 @@ func readFile(filepath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}

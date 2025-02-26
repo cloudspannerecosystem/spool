@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gcpug/handy-spanner/fake"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"google.golang.org/api/option"
@@ -34,23 +33,15 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	srv, conn, err := fake.Run()
-	if err != nil {
-		panic(err)
-	}
-	defer srv.Stop()
-	defer conn.Close()
-	testConf.SpannerClientOptions = append(testConf.SpannerClientOptions, option.WithGRPCConn(conn))
-
 	if err := Setup(context.Background(), testConf.Config()); err != nil {
 		panic(errors.Wrap(err, "failed to setup spool metadata database"))
 	}
 
-	ddl1, err = readFile("testdata/schema1.sql")
+	_, err := readFile("testdata/schema1.sql")
 	if err != nil {
 		panic(err)
 	}
-	ddl2, err = readFile("testdata/schema2.sql")
+	_, err = readFile("testdata/schema2.sql")
 	if err != nil {
 		panic(err)
 	}

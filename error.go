@@ -5,9 +5,8 @@ type yoError interface {
 }
 
 func isErrNotFound(err error) bool {
-	switch v := err.(type) {
-	case yoError:
-		return v.NotFound()
+	if err, ok := err.(yoError); ok {
+		return err.NotFound()
 	}
 	return false
 }

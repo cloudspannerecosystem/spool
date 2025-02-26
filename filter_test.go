@@ -21,10 +21,8 @@ func TestFilterNotUsedWithin(t *testing.T) {
 	filtered := filter(sdbs, FilterNotUsedWithin(hour))
 	if len(filtered) != 1 {
 		t.Errorf("expected 1 but got %d", len(filtered))
-	} else {
-		if !filtered[0].UpdatedAt.Equal(sdbs[0].UpdatedAt) {
-			t.Errorf("expected %s but got %s", sdbs[0].UpdatedAt, filtered[0].UpdatedAt)
-		}
+	} else if !filtered[0].UpdatedAt.Equal(sdbs[0].UpdatedAt) {
+		t.Errorf("expected %s but got %s", sdbs[0].UpdatedAt, filtered[0].UpdatedAt)
 	}
 }
 
@@ -41,9 +39,7 @@ func TestFilterState(t *testing.T) {
 	filtered := filter(sdbs, FilterState(state))
 	if len(filtered) != 1 {
 		t.Errorf("expected 1 but got %d", len(filtered))
-	} else {
-		if filtered[0].State != state.Int64() {
-			t.Errorf("expected %s but got %s", state, State(filtered[0].State))
-		}
+	} else if filtered[0].State != state.Int64() {
+		t.Errorf("expected %s but got %s", state, State(filtered[0].State))
 	}
 }
