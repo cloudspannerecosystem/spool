@@ -7,17 +7,12 @@ SPANNER_EMULATOR_HOST_REST ?= localhost:9020
 
 BIN_DIR := .bin
 YO_BIN := ${BIN_DIR}/yo
-STATIK_BIN := ${BIN_DIR}/statik
 LINT_BIN := ${BIN_DIR}/golangci-lint
 WRENCH_BIN := ${BIN_DIR}/wrench
 
 ${YO_BIN}:
 	@mkdir -p ${BIN_DIR}
 	@go build -o ${YO_BIN} go.mercari.io/yo
-
-${STATIK_BIN}:
-	@mkdir -p ${BIN_DIR}
-	@go build -o ${STATIK_BIN} github.com/rakyll/statik
 
 ${LINT_BIN}:
 	@mkdir -p ${BIN_DIR}
@@ -29,23 +24,19 @@ ${WRENCH_BIN}:
 
 
 .PHONY: install
-install: ${WRENCH_BIN} ${YO_BIN} ${STATIK_BIN} ${LINT_BIN}
+install: ${WRENCH_BIN} ${YO_BIN} ${LINT_BIN}
 
 .PHONY: clean
 clean:
 	rm -rf ${BIN_DIR}
 
 .PHONY: gen
-gen: gen_model gen_assets
+gen: gen_model
 
 .PHONY: gen_model
 gen_model: ${YO_BIN}
 	rm -f ./model/*.yo.go
 	${YO_BIN} $(SPANNER_PROJECT_ID) $(SPANNER_INSTANCE_ID) $(SPOOL_SPANNER_DATABASE_ID) --out ./model/
-
-.PHONY: gen_assets
-gen_assets: ${STATIK_BIN}
-	${STATIK_BIN} -src ./db
 
 .PHONY: lint
 lint: ${LINT_BIN}

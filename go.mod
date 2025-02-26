@@ -10,7 +10,6 @@ require (
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pkg/errors v0.9.1
-	github.com/rakyll/statik v0.1.7
 	go.mercari.io/yo v0.5.0
 	google.golang.org/api v0.63.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
