@@ -151,3 +151,25 @@ workflows:
       - cleanup-old-test-db:
           context: org-global
 ```
+
+## How to development
+
+Setup environment (do it once)
+
+```shell
+$ export CLOUDSDK_ACTIVE_CONFIG_NAME=spool-test-config
+$ gcloud config configurations create --no-activate $CLOUDSDK_ACTIVE_CONFIG_NAME
+$ gcloud config set auth/disable_credentials true
+$ gcloud config set project spool-test
+$ gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
+```
+
+Setup environment (do this before execute testing)
+
+```shell
+$ docker compose up -d --build --force-recreate
+$ export CLOUDSDK_ACTIVE_CONFIG_NAME=spool-test-config
+$ make setup-emulator
+$ make test
+$ docker compose down
+```

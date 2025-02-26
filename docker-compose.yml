@@ -1,0 +1,15 @@
+services:
+  spanner-emulator:
+    image: gcr.io/cloud-spanner-emulator/emulator:1.5.29
+    # docker run gcr.io/cloud-spanner-emulator/emulator ./gateway_main --help
+    # docker run gcr.io/cloud-spanner-emulator/emulator ./emulator_main --helpfull
+    entrypoint:
+      - './gateway_main'
+      - '--hostname'
+      - '0.0.0.0'
+      - '--log_requests' # requires -copy_emulator_stdout
+      - '-copy_emulator_stderr'
+      - '-copy_emulator_stdout'
+    ports:
+      - 9010:9010
+      - 9020:9020
