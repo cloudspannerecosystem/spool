@@ -1,6 +1,6 @@
 # spool
 
-[![CircleCI](https://circleci.com/gh/cloudspannerecosystem/spool.svg)](https://circleci.com/gh/cloudspannerecosystem/spool)
+[![build and test](https://github.com/cloudspannerecosystem/spool/actions/workflows/build_and_test.yaml/badge.svg)](https://github.com/cloudspannerecosystem/spool/actions/workflows/build_and_test.yaml)
 
 A CLI tool to manage [Cloud Spanner](https://cloud.google.com/spanner) databases for testing.
 
