@@ -2,15 +2,20 @@ module github.com/cloudspannerecosystem/spool
 
 go 1.23.0
 
+toolchain go1.24.0
+
+tool (
+	github.com/cloudspannerecosystem/wrench
+	github.com/golangci/golangci-lint/cmd/golangci-lint
+	go.mercari.io/yo
+)
+
 require (
 	cloud.google.com/go/spanner v1.28.0
 	github.com/alecthomas/kingpin v2.2.6+incompatible
-	github.com/cloudspannerecosystem/wrench v1.0.4
 	github.com/gcpug/handy-spanner v0.6.5
-	github.com/golangci/golangci-lint v1.43.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pkg/errors v0.9.1
-	go.mercari.io/yo v0.5.0
 	google.golang.org/api v0.63.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	google.golang.org/grpc v1.43.0
@@ -42,6 +47,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/charithe/durationcheck v0.0.9 // indirect
 	github.com/chavacava/garif v0.0.0-20210405164556-e8a0a408d6af // indirect
+	github.com/cloudspannerecosystem/wrench v1.0.4 // indirect
 	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect
 	github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1 // indirect
 	github.com/daixiang0/gci v0.2.9 // indirect
@@ -73,6 +79,7 @@ require (
 	github.com/golangci/dupl v0.0.0-20180902072040-3e9179ac440a // indirect
 	github.com/golangci/go-misc v0.0.0-20180628070357-927a3d87b613 // indirect
 	github.com/golangci/gofmt v0.0.0-20190930125516-244bba706f1a // indirect
+	github.com/golangci/golangci-lint v1.43.0 // indirect
 	github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0 // indirect
 	github.com/golangci/maligned v0.0.0-20180506175553-b1d89398deca // indirect
 	github.com/golangci/misspell v0.3.5 // indirect
@@ -163,6 +170,7 @@ require (
 	github.com/ultraware/whitespace v0.0.4 // indirect
 	github.com/uudashr/gocognit v1.0.5 // indirect
 	github.com/yeya24/promlinter v0.1.0 // indirect
+	go.mercari.io/yo v0.5.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/mod v0.5.0 // indirect
 	golang.org/x/net v0.0.0-20211020060615-d418f374d309 // indirect
