@@ -1,6 +1,6 @@
 module github.com/cloudspannerecosystem/spool
 
-go 1.17
+go 1.23.0
 
 require (
 	cloud.google.com/go/spanner v1.28.0

@@ -1,6 +1,9 @@
-SPANNER_PROJECT_ID  ?=
-SPANNER_INSTANCE_ID ?=
-SPOOL_SPANNER_DATABASE_ID ?=
+SPANNER_PROJECT_ID ?= spool-test-project
+SPANNER_INSTANCE_ID ?= spool-test-instance
+SPOOL_SPANNER_DATABASE_ID ?= spool-test-database
+
+SPANNER_EMULATOR_HOST ?= localhost:9010
+SPANNER_EMULATOR_HOST_REST ?= localhost:9020
 
 BIN_DIR := .bin
 YO_BIN := ${BIN_DIR}/yo
@@ -51,6 +54,10 @@ lint: ${LINT_BIN}
 .PHONY: test
 test:
 	go test -v -race -p=1 `go list ./... | grep -v tools`
+
+.PHONY: setup-emulator
+setup-emulator:
+	curl -s "${SPANNER_EMULATOR_HOST_REST}/v1/projects/${SPANNER_PROJECT_ID}/instances" --data '{"instanceId": "'${SPANNER_INSTANCE_ID}'"}'
 
 .PHONY: create_db
 create_db: ${WRENCH_BIN}

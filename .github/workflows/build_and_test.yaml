@@ -1,0 +1,28 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+name: build and test
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      emulator:
+        image: gcr.io/cloud-spanner-emulator/emulator:1.5.29
+        ports:
+          - 9010:9010
+          - 9020:9020
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-go@v5.3.0
+        with:
+          go-version-file: ./go.mod
+      - run: go version
+      - run: make install
+      - run: make lint
+      - run: make setup-emulator
+      - run: |
+          mkdir -p .bin
+          go build -o .bin/spool ./cmd/spool
+      - run: make test
