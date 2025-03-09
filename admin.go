@@ -3,10 +3,12 @@ package spool
 import (
 	"context"
 	"fmt"
+	"github.com/cloudspannerecosystem/spool/internal/db"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"cloud.google.com/go/spanner"
 	admin "cloud.google.com/go/spanner/admin/database/apiv1"
-	"github.com/cloudspannerecosystem/spool/internal/db"
 	"github.com/cloudspannerecosystem/spool/model"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
@@ -17,17 +19,40 @@ func Setup(ctx context.Context, conf *Config) error {
 	if err != nil {
 		return err
 	}
-	op, err := adminClient.CreateDatabase(ctx, &databasepb.CreateDatabaseRequest{
-		Parent:          conf.Instance(),
-		CreateStatement: fmt.Sprintf("CREATE DATABASE `%s`", conf.DatabaseID()),
-		ExtraStatements: ddlToStatements(db.SpoolSchema),
+
+	_, err = adminClient.GetDatabase(ctx, &databasepb.GetDatabaseRequest{
+		Name: conf.Database(),
 	})
-	if err != nil {
+	if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+		// Database does not exist. Create a new one.
+		op, err := adminClient.CreateDatabase(ctx, &databasepb.CreateDatabaseRequest{
+			Parent:          conf.Instance(),
+			CreateStatement: fmt.Sprintf("CREATE DATABASE `%s`", conf.DatabaseID()),
+			ExtraStatements: ddlToStatements(db.SpoolSchema),
+		})
+		if err != nil {
+			return err
+		}
+		if _, err := op.Wait(ctx); err != nil {
+			return err
+		}
+	} else if err != nil {
 		return err
+	} else {
+		// Database already exists. Try to update schema.
+		// Considerations when the database is created using terraform, etc.
+		op, err := adminClient.UpdateDatabaseDdl(ctx, &databasepb.UpdateDatabaseDdlRequest{
+			Database:   conf.Database(),
+			Statements: ddlToStatements(db.SpoolSchema),
+		})
+		if err != nil {
+			return err
+		}
+		if err := op.Wait(ctx); err != nil {
+			return err
+		}
 	}
-	if _, err := op.Wait(ctx); err != nil {
-		return err
-	}
+
 	return nil
 }
 
