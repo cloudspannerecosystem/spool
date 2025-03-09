@@ -14,6 +14,7 @@ func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, 
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(client.Close)
 	return client, func() {
 		if err := clean(ctx, client, conf,
 			func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error) {
@@ -26,9 +27,13 @@ func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, 
 }
 
 func TestListAll(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
 	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
 	sdb1 := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test-1",
 		Checksum:     "checksum-1",
@@ -47,7 +52,7 @@ func TestListAll(t *testing.T) {
 		t.Fatalf("failed to setup fixture: %s", err)
 	}
 
-	sdbs, err := ListAll(ctx, testConf.Config())
+	sdbs, err := ListAll(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,9 +62,13 @@ func TestListAll(t *testing.T) {
 }
 
 func TestCleanAll(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
 	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
 	sdb1 := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test-1",
 		Checksum:     "checksum-1",
@@ -78,7 +87,7 @@ func TestCleanAll(t *testing.T) {
 		t.Fatalf("failed to setup fixture: %s", err)
 	}
 
-	if err := CleanAll(ctx, testConf.Config()); err != nil {
+	if err := CleanAll(ctx, cfg); err != nil {
 		t.Fatal(err)
 	}
 	sdbs, err := model.FindAllSpoolDatabases(ctx, client.Single())

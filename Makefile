@@ -1,9 +1,9 @@
-SPANNER_PROJECT_ID ?= spool-test-project
-SPANNER_INSTANCE_ID ?= spool-test-instance
-SPOOL_SPANNER_DATABASE_ID ?= spool-test-database
+export SPANNER_PROJECT_ID ?= spool-test-project
+export SPANNER_INSTANCE_ID ?= spool-test-instance
+export SPOOL_SPANNER_DATABASE_ID ?= spool-test-database
 
-SPANNER_EMULATOR_HOST ?= localhost:9010
-SPANNER_EMULATOR_HOST_REST ?= localhost:9020
+export SPANNER_EMULATOR_HOST ?= localhost:9010
+export SPANNER_EMULATOR_HOST_REST ?= localhost:9020
 
 YO_BIN := go tool yo
 LINT_BIN := go tool golangci-lint

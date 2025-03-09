@@ -2,17 +2,15 @@ package spool
 
 import (
 	"context"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"cloud.google.com/go/spanner"
 	"github.com/cloudspannerecosystem/spool/model"
 )
 
-func newPool(ctx context.Context, t *testing.T, ddl []byte) *Pool {
+func newPool(ctx context.Context, t *testing.T, cfg *Config, ddl []byte) *Pool {
 	t.Helper()
-	pool, err := NewPool(ctx, testConf.Config(), ddl)
+	pool, err := NewPool(ctx, cfg, ddl)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,12 +18,16 @@ func newPool(ctx context.Context, t *testing.T, ddl []byte) *Pool {
 }
 
 func TestPool_Create(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	t.Parallel()
 
-	pool := newPool(ctx, t, ddl1)
-	sdb, err := pool.Create(ctx, testConf.DatabaseNamePrefix)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
+	sdb, err := pool.Create(ctx, spoolSpannerDatabaseNamePrefix())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,11 +37,15 @@ func TestPool_Create(t *testing.T) {
 }
 
 func TestPool_Get(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	t.Parallel()
 
-	pool := newPool(ctx, t, ddl1)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
 	sdb := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test",
 		Checksum:     checksum(ddl1),
@@ -52,7 +58,7 @@ func TestPool_Get(t *testing.T) {
 	}
 
 	t.Run("not found (no database for the schema)", func(t *testing.T) {
-		pool2 := newPool(ctx, t, ddl2)
+		pool2 := newPool(ctx, t, cfg, ddl2)
 		if _, err := pool2.Get(ctx); err != nil {
 			if !isErrNotFound(err) {
 				t.Fatal(err)
@@ -78,11 +84,15 @@ func TestPool_Get(t *testing.T) {
 }
 
 func TestPool_GetOrCreate(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	// t.Parallel() // this test can't be parallel because it uses time.Now().Unix()
 
-	pool := newPool(ctx, t, ddl1)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
 	sdb := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test",
 		Checksum:     checksum(ddl1),
@@ -95,7 +105,7 @@ func TestPool_GetOrCreate(t *testing.T) {
 	}
 
 	t.Run("get", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, testConf.DatabaseNamePrefix)
+		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -104,7 +114,7 @@ func TestPool_GetOrCreate(t *testing.T) {
 		}
 	})
 	t.Run("create", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, testConf.DatabaseNamePrefix)
+		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -115,11 +125,15 @@ func TestPool_GetOrCreate(t *testing.T) {
 }
 
 func TestPool_List(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	t.Parallel()
 
-	pool := newPool(ctx, t, ddl1)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
 	sdb1 := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test-1",
 		Checksum:     checksum(ddl1),
@@ -151,11 +165,15 @@ func TestPool_List(t *testing.T) {
 }
 
 func TestPool_Put(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	t.Parallel()
 
-	pool := newPool(ctx, t, ddl1)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
 	sdb := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test",
 		Checksum:     checksum(ddl1),
@@ -180,11 +198,15 @@ func TestPool_Put(t *testing.T) {
 }
 
 func TestPool_Clean(t *testing.T) {
-	ctx := context.Background()
-	client, truncate := connect(ctx, t, testConf.Config())
-	defer truncate()
+	t.Parallel()
 
-	pool := newPool(ctx, t, ddl1)
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
 	sdb1 := &model.SpoolDatabase{
 		DatabaseName: "zoncoen-spool-test-1",
 		Checksum:     checksum(ddl1),
@@ -220,16 +242,4 @@ func TestPool_Clean(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
-}
-
-func readFile(filepath string) ([]byte, error) {
-	f, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
 }
