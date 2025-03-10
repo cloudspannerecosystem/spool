@@ -1,14 +1,14 @@
 package spool
 
 import (
-	admin "cloud.google.com/go/spanner/admin/database/apiv1"
 	"context"
 	"fmt"
-	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 	"testing"
 
 	"cloud.google.com/go/spanner"
+	admin "cloud.google.com/go/spanner/admin/database/apiv1"
 	"github.com/cloudspannerecosystem/spool/model"
+	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
 func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, func()) {
