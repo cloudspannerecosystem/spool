@@ -2,10 +2,13 @@ package spool
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"cloud.google.com/go/spanner"
+	admin "cloud.google.com/go/spanner/admin/database/apiv1"
 	"github.com/cloudspannerecosystem/spool/model"
+	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 )
 
 func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, func()) {
@@ -23,6 +26,34 @@ func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, 
 		); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestSetup(t *testing.T) {
+	t.Parallel()
+
+	cfg := ConfigTestDatabase(t)
+
+	ctx := context.Background()
+
+	adminClient, err := admin.NewDatabaseAdminClient(ctx, cfg.ClientOptions()...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	op, err := adminClient.CreateDatabase(ctx, &databasepb.CreateDatabaseRequest{
+		Parent:          cfg.Instance(),
+		CreateStatement: fmt.Sprintf("CREATE DATABASE `%s`", cfg.DatabaseID()),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := op.Wait(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := Setup(ctx, cfg); err != nil {
+		t.Fatal(err)
 	}
 }
 

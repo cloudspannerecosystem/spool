@@ -24,15 +24,13 @@ func spoolSpannerDatabaseNamePrefix() string {
 	return s
 }
 
-func SetupTestDatabase(t *testing.T) *Config {
+func ConfigTestDatabase(t *testing.T) *Config {
 	t.Helper()
 
 	emulatorHost := os.Getenv("SPANNER_EMULATOR_HOST")
 	if emulatorHost == "" {
 		t.Fatal("SPANNER_EMULATOR_HOST environment variable is not set")
 	}
-
-	ctx := context.Background()
 
 	b := make([]byte, 10)
 	_, err := rand.Read(b)
@@ -46,7 +44,16 @@ func SetupTestDatabase(t *testing.T) *Config {
 		fmt.Sprintf("test-%x", b),
 	)
 
-	err = Setup(ctx, cfg)
+	return cfg
+}
+
+func SetupTestDatabase(t *testing.T) *Config {
+	t.Helper()
+
+	ctx := context.Background()
+	cfg := ConfigTestDatabase(t)
+
+	err := Setup(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
