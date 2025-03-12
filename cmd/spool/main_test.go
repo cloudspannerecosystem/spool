@@ -109,14 +109,11 @@ func TestLoadEnvVarsIfNeeded(t *testing.T) {
 		},
 	}
 	for name, test := range tests {
-		test := test
 		t.Run(name, func(t *testing.T) {
 			test.setup()
 			os.Clearenv()
 			for k, v := range test.envVars {
-				if err := os.Setenv(k, v); err != nil {
-					t.Fatalf("unexpected error: %s", err)
-				}
+				t.Setenv(k, v)
 			}
 			err := loadEnvVarsIfNeeded()
 			if test.fail {

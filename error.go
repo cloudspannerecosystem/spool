@@ -1,13 +1,15 @@
 package spool
 
+import "errors"
+
 type yoError interface {
 	NotFound() bool
 }
 
 func isErrNotFound(err error) bool {
-	switch v := err.(type) {
-	case yoError:
-		return v.NotFound()
+	var yErr yoError
+	if errors.As(err, &yErr) {
+		return yErr.NotFound()
 	}
 	return false
 }
