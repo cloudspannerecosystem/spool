@@ -8,6 +8,8 @@ import (
 )
 
 func TestFilterNotUsedWithin(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	hour := time.Hour
 	sdbs := []*model.SpoolDatabase{
@@ -29,6 +31,8 @@ func TestFilterNotUsedWithin(t *testing.T) {
 }
 
 func TestFilterState(t *testing.T) {
+	t.Parallel()
+
 	sdbs := []*model.SpoolDatabase{
 		{
 			State: StateIdle.Int64(),

@@ -65,7 +65,7 @@ func main() {
 		kingpin.FatalIfError(spool.Setup(ctx, config), "failed to setup")
 	case create.FullCommand():
 		pool := newPool(ctx, config)
-		for i := 0; i < *createDatabaseNum; i++ {
+		for range *createDatabaseNum {
 			_, err := pool.Create(ctx, *createDatabaseNamePrefix)
 			kingpin.FatalIfError(err, "failed to create database")
 		}

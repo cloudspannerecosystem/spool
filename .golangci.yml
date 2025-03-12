@@ -3,15 +3,20 @@ run:
   deadline: 1m
   issues-exit-code: 1
   tests: true
-  skip-dirs:
+issues:
+  exclude-dirs:
     - model
-  skip-files:
+  exclude-files:
     - assets.go
 linters:
-  enable-all: true
-  disable:
-    - gochecknoglobals
-    - gocritic
-    - lll
-    - unparam
-    - funlen
+  enable:
+    - bodyclose
+    - errcheck
+    - gosec
+    - govet
+    - nilerr
+    - noctx
+    - nolintlint
+    - revive
+    - staticcheck
+    - unused
