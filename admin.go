@@ -3,14 +3,14 @@ package spool
 import (
 	"context"
 	"fmt"
-	"github.com/cloudspannerecosystem/spool/internal/db"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"cloud.google.com/go/spanner"
 	admin "cloud.google.com/go/spanner/admin/database/apiv1"
+	"cloud.google.com/go/spanner/admin/database/apiv1/databasepb"
+	"github.com/cloudspannerecosystem/spool/internal/db"
 	"github.com/cloudspannerecosystem/spool/model"
-	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Setup creates a new spool metadata database.

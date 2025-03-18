@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -65,7 +65,7 @@ func main() {
 		kingpin.FatalIfError(spool.Setup(ctx, config), "failed to setup")
 	case create.FullCommand():
 		pool := newPool(ctx, config)
-		for i := 0; i < *createDatabaseNum; i++ {
+		for range *createDatabaseNum {
 			_, err := pool.Create(ctx, *createDatabaseNamePrefix)
 			kingpin.FatalIfError(err, "failed to create database")
 		}
@@ -151,7 +151,7 @@ func newPool(ctx context.Context, config *spool.Config) *spool.Pool {
 	if *schemaFile == nil {
 		kingpin.Fatalf("required flag --schema not provided, try --help")
 	}
-	ddl, err := ioutil.ReadAll(*schemaFile)
+	ddl, err := io.ReadAll(*schemaFile)
 	kingpin.FatalIfError(err, "failed to read schema file")
 	pool, err := spool.NewPool(ctx, config, ddl)
 	kingpin.FatalIfError(err, "")
