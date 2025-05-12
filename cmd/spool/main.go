@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"text/tabwriter"
 	"time"
 
@@ -22,7 +23,11 @@ const (
 )
 
 var (
-	app        = kingpin.New("spool", "A CLI tool to manage Cloud Spanner databases for testing.")
+	versionStr string
+)
+
+var (
+	app        = kingpin.New("spool", "A CLI tool to manage Cloud Spanner databases for testing.").Version(versionInfo())
 	projectID  = app.Flag("project", "Set GCP project ID. (use $SPANNER_PROJECT_ID or $GOOGLE_CLOUD_PROJECT as default value)").Short('p').String()
 	instanceID = app.Flag("instance", "Set Cloud Spanner instance name. (use $SPANNER_INSTANCE_ID as default value)").Short('i').String()
 	databaseID = app.Flag("database", "Set Cloud Spanner database name. (use $SPOOL_SPANNER_DATABASE_ID as default value)").Short('d').String()
@@ -156,4 +161,17 @@ func newPool(ctx context.Context, config *spool.Config) *spool.Pool {
 	pool, err := spool.NewPool(ctx, config, ddl)
 	kingpin.FatalIfError(err, "")
 	return pool
+}
+
+func versionInfo() string {
+	if versionStr != "" {
+		return versionStr
+	}
+
+	// For those who "go install" yo
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
+	}
+	return info.Main.Version
 }
