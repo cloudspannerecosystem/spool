@@ -1,0 +1,29 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  goreleaser:
+    name: Release pre-build binary by goreleaser
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5.3.0
+        with:
+          go-version-file: ./go.mod
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6.2.1
+        with:
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
