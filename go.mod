@@ -11,7 +11,7 @@ tool (
 )
 
 require (
-	cloud.google.com/go/spanner v1.81.1
+	cloud.google.com/go/spanner v1.82.0
 	github.com/alecthomas/kingpin v2.2.6+incompatible
 	google.golang.org/api v0.232.0
 	google.golang.org/grpc v1.72.0
