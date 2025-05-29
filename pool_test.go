@@ -68,6 +68,10 @@ func TestPool_Get(t *testing.T) {
 		}
 	})
 	t.Run("found", func(t *testing.T) {
+		_, err := pool.Create(ctx, spoolSpannerDatabaseNamePrefix())
+		if err != nil {
+			t.Fatal(err)
+		}
 		if _, err := pool.Get(ctx); err != nil {
 			t.Fatal(err)
 		}
