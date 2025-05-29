@@ -37,7 +37,7 @@ func TestPool_Create(t *testing.T) {
 }
 
 func TestPool_Get(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // this test can't be parallel because it uses time.Now().Unix()
 
 	cfg := SetupTestDatabase(t)
 
