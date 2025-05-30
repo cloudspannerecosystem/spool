@@ -119,7 +119,7 @@ func TestPool_GetOrCreate(t *testing.T) {
 		}
 	})
 	t.Run("create", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
+		got, err := pool.GetOrCreate(ctx, fmt.Sprintf("%s-create", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
 		if err != nil {
 			t.Fatal(err)
 		}
