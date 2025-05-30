@@ -12,6 +12,8 @@ import (
 	admin "cloud.google.com/go/spanner/admin/database/apiv1"
 	"cloud.google.com/go/spanner/admin/database/apiv1/databasepb"
 	"github.com/cloudspannerecosystem/spool/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // State represents a state of the database.
@@ -22,6 +24,8 @@ const (
 	StateIdle State = iota
 	// StateBusy represents a busy state.
 	StateBusy
+	// StateNotFound represents a database does not exist state.
+	StateNotFound
 )
 
 // Int64 returns s as int64.
@@ -36,6 +40,8 @@ func (s State) String() string {
 		return "idle"
 	case StateBusy:
 		return "busy"
+	case StateNotFound:
+		return "notfound"
 	}
 	return "unknown"
 }
@@ -121,22 +127,38 @@ func (p *Pool) create(ctx context.Context, sdb *model.SpoolDatabase) (*model.Spo
 
 // Get gets a idle database from the pool.
 func (p *Pool) Get(ctx context.Context) (*model.SpoolDatabase, error) {
-	var sdb *model.SpoolDatabase
-	if _, err := p.client.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
-		var err error
-		sdb, err = model.FindSpoolDatabaseByChecksumState(ctx, txn, p.checksum, StateIdle.Int64())
-		if err != nil {
-			return err
+	for {
+		var sdb *model.SpoolDatabase
+		if _, err := p.client.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+			var err error
+			sdb, err = model.FindSpoolDatabaseByChecksumState(ctx, txn, p.checksum, StateIdle.Int64())
+			if err != nil {
+				return err
+			}
+
+			exist, err := p.existDatabase(ctx, sdb.DatabaseName)
+			if err != nil {
+				return err
+			}
+			if exist {
+				sdb.ChangeState(StateBusy.Int64())
+			} else {
+				sdb.ChangeState(StateNotFound.Int64())
+			}
+
+			if err := txn.BufferWrite([]*spanner.Mutation{sdb.Update(ctx)}); err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
+			return nil, err
 		}
-		sdb.ChangeState(StateBusy.Int64())
-		if err := txn.BufferWrite([]*spanner.Mutation{sdb.Update(ctx)}); err != nil {
-			return err
+		if sdb.State == StateNotFound.Int64() {
+			continue
 		}
-		return nil
-	}); err != nil {
-		return nil, err
+
+		return sdb, nil
 	}
-	return sdb, nil
 }
 
 // GetOrCreate gets a idle database or creates a new database.
@@ -191,4 +213,17 @@ func (p *Pool) Clean(ctx context.Context, filters ...func(sdb *model.SpoolDataba
 		}
 		return filter(sdbs, filters...), nil
 	})
+}
+
+func (p *Pool) existDatabase(ctx context.Context, dbName string) (bool, error) {
+	_, err := p.adminClient.GetDatabase(ctx, &databasepb.GetDatabaseRequest{
+		Name: fmt.Sprintf("projects/%s/instances/%s/databases/%s", p.conf.projectID, p.conf.instanceID, dbName),
+	})
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
