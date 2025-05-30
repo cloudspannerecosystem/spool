@@ -2,6 +2,7 @@ package spool
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"cloud.google.com/go/spanner"
@@ -68,7 +69,7 @@ func TestPool_Get(t *testing.T) {
 		}
 	})
 	t.Run("found", func(t *testing.T) {
-		_, err := pool.Create(ctx, spoolSpannerDatabaseNamePrefix())
+		_, err := pool.Create(ctx, fmt.Sprintf("%s-found", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
 		if err != nil {
 			t.Fatal(err)
 		}
