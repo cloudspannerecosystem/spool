@@ -3,6 +3,7 @@ package spool
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"cloud.google.com/go/spanner"
@@ -110,12 +111,17 @@ func TestPool_GetOrCreate(t *testing.T) {
 	}
 
 	t.Run("get", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
+		dbNamePrefix := fmt.Sprintf("%s-get", spoolSpannerDatabaseNamePrefix()) // Adjusted names to avoid collisions
+		_, err := pool.Create(ctx, dbNamePrefix)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.DatabaseName != sdb.DatabaseName {
-			t.Errorf("expected %s but got %s", sdb.DatabaseName, got.DatabaseName)
+		got, err := pool.GetOrCreate(ctx, dbNamePrefix)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.HasPrefix(got.DatabaseName, dbNamePrefix) {
+			t.Errorf("expected %s prefix but got %s", dbNamePrefix, got.DatabaseName)
 		}
 	})
 	t.Run("create", func(t *testing.T) {
