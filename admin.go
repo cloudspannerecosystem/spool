@@ -91,7 +91,15 @@ func clean(ctx context.Context, client *spanner.Client, conf *Config, find func(
 		for _, sdb := range sdbs {
 			dropErr = dropDatabase(ctx, conf.WithDatabaseID(sdb.DatabaseName))
 			if dropErr != nil {
-				break
+				st, ok := status.FromError(dropErr)
+				if ok && st.Code() == codes.NotFound {
+					// Database was not found, ignore this error and continue to the next database.
+					// Reset dropErr so it doesn't affect the final return value unless a subsequent, different error occurs.
+					dropErr = nil
+				} else {
+					// For any other error, break the loop.
+					break
+				}
 			}
 			ms = append(ms, sdb.Delete(ctx))
 		}
