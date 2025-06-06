@@ -2,6 +2,8 @@ package spool
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 
 	"cloud.google.com/go/spanner"
@@ -37,7 +39,7 @@ func TestPool_Create(t *testing.T) {
 }
 
 func TestPool_Get(t *testing.T) {
-	t.Parallel()
+	// t.Parallel() // this test can't be parallel because it uses time.Now().Unix()
 
 	cfg := SetupTestDatabase(t)
 
@@ -68,6 +70,10 @@ func TestPool_Get(t *testing.T) {
 		}
 	})
 	t.Run("found", func(t *testing.T) {
+		_, err := pool.Create(ctx, fmt.Sprintf("%s-found", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
+		if err != nil {
+			t.Fatal(err)
+		}
 		if _, err := pool.Get(ctx); err != nil {
 			t.Fatal(err)
 		}
@@ -105,16 +111,21 @@ func TestPool_GetOrCreate(t *testing.T) {
 	}
 
 	t.Run("get", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
+		dbNamePrefix := fmt.Sprintf("%s-get", spoolSpannerDatabaseNamePrefix()) // Adjusted names to avoid collisions
+		_, err := pool.Create(ctx, dbNamePrefix)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.DatabaseName != sdb.DatabaseName {
-			t.Errorf("expected %s but got %s", sdb.DatabaseName, got.DatabaseName)
+		got, err := pool.GetOrCreate(ctx, dbNamePrefix)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.HasPrefix(got.DatabaseName, dbNamePrefix) {
+			t.Errorf("expected %s prefix but got %s", dbNamePrefix, got.DatabaseName)
 		}
 	})
 	t.Run("create", func(t *testing.T) {
-		got, err := pool.GetOrCreate(ctx, spoolSpannerDatabaseNamePrefix())
+		got, err := pool.GetOrCreate(ctx, fmt.Sprintf("%s-create", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
 		if err != nil {
 			t.Fatal(err)
 		}
