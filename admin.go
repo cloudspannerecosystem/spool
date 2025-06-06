@@ -96,6 +96,7 @@ func clean(ctx context.Context, client *spanner.Client, conf *Config, find func(
 					// Database was not found, ignore this error and continue to the next database.
 					// Reset dropErr so it doesn't affect the final return value unless a subsequent, different error occurs.
 					dropErr = nil
+					fmt.Printf("%s was not deleted because it no longer exists.\n", sdb.DatabaseName)
 				} else {
 					// For any other error, break the loop.
 					break
