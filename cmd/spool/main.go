@@ -50,6 +50,9 @@ var (
 	put             = app.Command("put", "Return the database to the pool.")
 	putDatabaseName = put.Arg("database", "database name").Required().String()
 
+	drop             = app.Command("drop", "Drop the database and remove it from the pool.")
+	dropDatabaseName = drop.Arg("database", "database name").Required().String()
+
 	clean                     = app.Command("clean", "Drop all idle databases.")
 	cleanAll                  = clean.Flag("all", "Drop all idle databases. (without checksum filtering)").Default("false").Bool()
 	cleanIgnoreUsedWithinDays = clean.Flag("ignore-used-within-days", "Ignore databases which used within n days.").Int64()
@@ -106,6 +109,10 @@ func main() {
 		pool := newPool(ctx, config)
 		err := pool.Put(ctx, *putDatabaseName)
 		kingpin.FatalIfError(err, "failed to put database")
+	case drop.FullCommand():
+		pool := newPool(ctx, config)
+		err := pool.Drop(ctx, *dropDatabaseName)
+		kingpin.FatalIfError(err, "failed to drop database")
 	case clean.FullCommand():
 		filters := []func(*model.SpoolDatabase) bool{}
 		if cleanIgnoreUsedWithinDays != nil {

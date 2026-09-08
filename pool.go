@@ -204,6 +204,24 @@ func (p *Pool) Put(ctx context.Context, dbName string) error {
 	return nil
 }
 
+// Drop drops the database and removes it from the pool.
+func (p *Pool) Drop(ctx context.Context, dbName string) error {
+	sdb, err := model.FindSpoolDatabase(ctx, p.client.Single(), dbName)
+	if err != nil {
+		return err
+	}
+	if err := dropDatabase(ctx, p.conf.WithDatabaseID(sdb.DatabaseName)); err != nil {
+		if status.Code(err) != codes.NotFound {
+			return err
+		}
+		fmt.Printf("%s was not dropped because it no longer exists.\n", sdb.DatabaseName)
+	}
+	if _, err := p.client.Apply(ctx, []*spanner.Mutation{sdb.Delete(ctx)}); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Clean removes all idle databases.
 func (p *Pool) Clean(ctx context.Context, filters ...func(sdb *model.SpoolDatabase) bool) error {
 	return clean(ctx, p.client, p.conf, func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error) {

@@ -208,6 +208,68 @@ func TestPool_Put(t *testing.T) {
 	}
 }
 
+func TestPool_Drop(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
+	// Use a dedicated prefix because Create() names databases by the current Unix time,
+	// which collides with the other tests creating databases in the same second.
+	sdb, err := pool.Create(ctx, fmt.Sprintf("%s-drop", spoolSpannerDatabaseNamePrefix()))
+	if err != nil {
+		t.Fatalf("failed to setup fixture: %s", err)
+	}
+
+	if err := pool.Drop(ctx, sdb.DatabaseName); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := model.FindSpoolDatabase(ctx, client.Single(), sdb.DatabaseName); !isErrNotFound(err) {
+		t.Errorf("expected not found error but got %v", err)
+	}
+	exist, err := pool.existDatabase(ctx, sdb.DatabaseName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exist {
+		t.Errorf("database %s still exists", sdb.DatabaseName)
+	}
+}
+
+func TestPool_Drop_databaseNotFound(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
+	sdb := &model.SpoolDatabase{
+		DatabaseName: "zoncoen-spool-test",
+		Checksum:     checksum(ddl1),
+		State:        StateBusy.Int64(),
+		CreatedAt:    spanner.CommitTimestamp,
+		UpdatedAt:    spanner.CommitTimestamp,
+	}
+	if _, err := client.Apply(ctx, []*spanner.Mutation{sdb.Insert(ctx)}); err != nil {
+		t.Fatalf("failed to setup fixture: %s", err)
+	}
+
+	// The database itself does not exist, but the metadata must be removed anyway.
+	if err := pool.Drop(ctx, sdb.DatabaseName); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := model.FindSpoolDatabase(ctx, client.Single(), sdb.DatabaseName); !isErrNotFound(err) {
+		t.Errorf("expected not found error but got %v", err)
+	}
+}
+
 func TestPool_Clean(t *testing.T) {
 	t.Parallel()
 

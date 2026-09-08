@@ -68,9 +68,17 @@ Commands:
   put <database>
     Return the database to the pool.
 
+  drop <database>
+    Drop the database and remove it from the pool.
+
   clean [<flags>]
     Drop all idle databases.
 ```
+
+Use `put` to return a database to the pool so that it can be reused by the next
+test run. Use `drop` instead to discard the database, which is useful when the
+number of databases in the instance matters because Cloud Spanner limits how many
+databases an instance can have.
 
 ## Sample CircleCI configuration
 
