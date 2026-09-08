@@ -218,9 +218,7 @@ func TestPool_Drop(t *testing.T) {
 	t.Cleanup(truncate)
 
 	pool := newPool(ctx, t, cfg, ddl1)
-	// Use a dedicated prefix because Create() names databases by the current Unix time,
-	// which collides with the other tests creating databases in the same second.
-	sdb, err := pool.Create(ctx, fmt.Sprintf("%s-drop", spoolSpannerDatabaseNamePrefix()))
+	sdb, err := pool.Create(ctx, fmt.Sprintf("%s-drop", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
 	if err != nil {
 		t.Fatalf("failed to setup fixture: %s", err)
 	}
@@ -261,7 +259,6 @@ func TestPool_Drop_databaseNotFound(t *testing.T) {
 		t.Fatalf("failed to setup fixture: %s", err)
 	}
 
-	// The database itself does not exist, but the metadata must be removed anyway.
 	if err := pool.Drop(ctx, sdb.DatabaseName); err != nil {
 		t.Fatal(err)
 	}
