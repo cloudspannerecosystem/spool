@@ -117,7 +117,7 @@ func (p *Pool) create(ctx context.Context, sdb *model.SpoolDatabase) (*model.Spo
 	}
 	ts, err := p.client.Apply(ctx, []*spanner.Mutation{sdb.Insert(ctx)})
 	if err != nil {
-		_ = dropDatabase(ctx, p.conf.WithDatabaseID(sdb.DatabaseName))
+		_ = dropDatabase(ctx, p.adminClient, p.conf.WithDatabaseID(sdb.DatabaseName))
 		return nil, err
 	}
 	sdb.CreatedAt = ts
@@ -210,7 +210,7 @@ func (p *Pool) Drop(ctx context.Context, dbName string) error {
 	if err != nil {
 		return err
 	}
-	if err := dropDatabase(ctx, p.conf.WithDatabaseID(sdb.DatabaseName)); err != nil {
+	if err := dropDatabase(ctx, p.adminClient, p.conf.WithDatabaseID(sdb.DatabaseName)); err != nil {
 		if status.Code(err) != codes.NotFound {
 			return err
 		}
@@ -224,7 +224,7 @@ func (p *Pool) Drop(ctx context.Context, dbName string) error {
 
 // Clean removes all idle databases.
 func (p *Pool) Clean(ctx context.Context, filters ...func(sdb *model.SpoolDatabase) bool) error {
-	return clean(ctx, p.client, p.conf, func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error) {
+	return clean(ctx, p.client, p.adminClient, p.conf, func(ctx context.Context, txn *spanner.ReadOnlyTransaction) ([]*model.SpoolDatabase, error) {
 		sdbs, err := model.FindSpoolDatabasesByChecksumState(ctx, txn, p.checksum, StateIdle.Int64())
 		if err != nil {
 			return nil, err

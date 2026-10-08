@@ -18,9 +18,14 @@ func connect(ctx context.Context, t *testing.T, conf *Config) (*spanner.Client, 
 		t.Fatal(err)
 	}
 	t.Cleanup(client.Close)
+	adminClient, err := admin.NewDatabaseAdminClient(ctx, conf.ClientOptions()...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = adminClient.Close() })
 	return client, func() {
-		if err := clean(ctx, client, conf,
-			func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error) {
+		if err := clean(ctx, client, adminClient, conf,
+			func(ctx context.Context, txn *spanner.ReadOnlyTransaction) ([]*model.SpoolDatabase, error) {
 				return model.FindAllSpoolDatabases(ctx, txn)
 			},
 		); err != nil {

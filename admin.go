@@ -71,7 +71,13 @@ func CleanAll(ctx context.Context, conf *Config, filters ...func(sdb *model.Spoo
 	if err != nil {
 		return err
 	}
-	return clean(ctx, client, conf, func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error) {
+	defer client.Close()
+	adminClient, err := admin.NewDatabaseAdminClient(ctx, conf.ClientOptions()...)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = adminClient.Close() }()
+	return clean(ctx, client, adminClient, conf, func(ctx context.Context, txn *spanner.ReadOnlyTransaction) ([]*model.SpoolDatabase, error) {
 		sdbs, err := model.FindAllSpoolDatabases(ctx, txn)
 		if err != nil {
 			return nil, err
@@ -80,50 +86,40 @@ func CleanAll(ctx context.Context, conf *Config, filters ...func(sdb *model.Spoo
 	})
 }
 
-func clean(ctx context.Context, client *spanner.Client, conf *Config, find func(ctx context.Context, txn *spanner.ReadWriteTransaction) ([]*model.SpoolDatabase, error)) error {
-	var dropErr error
-	if _, err := client.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
-		sdbs, err := find(ctx, txn)
-		if err != nil {
-			return err
-		}
-		ms := []*spanner.Mutation{}
-		for _, sdb := range sdbs {
-			dropErr = dropDatabase(ctx, conf.WithDatabaseID(sdb.DatabaseName))
-			if dropErr != nil {
-				st, ok := status.FromError(dropErr)
-				if ok && st.Code() == codes.NotFound {
-					// Database was not found, ignore this error and continue to the next database.
-					// Reset dropErr so it doesn't affect the final return value unless a subsequent, different error occurs.
-					dropErr = nil
-					fmt.Printf("%s was not deleted because it no longer exists.\n", sdb.DatabaseName)
-				} else {
-					// For any other error, break the loop.
-					break
-				}
-			}
-			ms = append(ms, sdb.Delete(ctx))
-		}
-		if len(ms) > 0 {
-			if err := txn.BufferWrite(ms); err != nil {
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
+func clean(ctx context.Context, client *spanner.Client, adminClient *admin.DatabaseAdminClient, conf *Config, find func(ctx context.Context, txn *spanner.ReadOnlyTransaction) ([]*model.SpoolDatabase, error)) error {
+	sdbs, err := find(ctx, client.Single())
+	if err != nil {
 		return err
 	}
-	if dropErr != nil {
-		return dropErr
+	for _, sdb := range sdbs {
+		if _, err := client.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+			latest, err := model.FindSpoolDatabase(ctx, txn, sdb.DatabaseName)
+			if err != nil {
+				if isErrNotFound(err) {
+					// The row was already removed since it was listed.
+					return nil
+				}
+				return err
+			}
+			if latest.State != sdb.State || !latest.UpdatedAt.Equal(sdb.UpdatedAt) {
+				// The database was used since it was listed, so it may no longer be a clean target.
+				return nil
+			}
+			if err := dropDatabase(ctx, adminClient, conf.WithDatabaseID(sdb.DatabaseName)); err != nil {
+				if status.Code(err) != codes.NotFound {
+					return err
+				}
+				fmt.Printf("%s was not deleted because it no longer exists.\n", sdb.DatabaseName)
+			}
+			return txn.BufferWrite([]*spanner.Mutation{sdb.Delete(ctx)})
+		}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func dropDatabase(ctx context.Context, conf *Config) error {
-	adminClient, err := admin.NewDatabaseAdminClient(ctx, conf.ClientOptions()...)
-	if err != nil {
-		return err
-	}
+func dropDatabase(ctx context.Context, adminClient *admin.DatabaseAdminClient, conf *Config) error {
 	return adminClient.DropDatabase(ctx, &databasepb.DropDatabaseRequest{
 		Database: conf.Database(),
 	})

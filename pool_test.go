@@ -313,3 +313,76 @@ func TestPool_Clean(t *testing.T) {
 		}
 	})
 }
+
+func TestPool_Clean_dropsDatabase(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
+	sdb, err := pool.Create(ctx, fmt.Sprintf("%s-clean", spoolSpannerDatabaseNamePrefix())) // Adjusted names to avoid collisions
+	if err != nil {
+		t.Fatalf("failed to setup fixture: %s", err)
+	}
+
+	if err := pool.Clean(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := model.FindSpoolDatabase(ctx, client.Single(), sdb.DatabaseName); !isErrNotFound(err) {
+		t.Errorf("expected not found error but got %v", err)
+	}
+	exist, err := pool.existDatabase(ctx, sdb.DatabaseName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exist {
+		t.Errorf("database %s still exists", sdb.DatabaseName)
+	}
+}
+
+func TestPool_Clean_databaseUpdatedConcurrently(t *testing.T) {
+	t.Parallel()
+
+	cfg := SetupTestDatabase(t)
+
+	ctx := context.Background()
+	client, truncate := connect(ctx, t, cfg)
+	t.Cleanup(truncate)
+
+	pool := newPool(ctx, t, cfg, ddl1)
+	sdb := &model.SpoolDatabase{
+		DatabaseName: "kakudo-spool-test",
+		Checksum:     checksum(ddl1),
+		State:        StateIdle.Int64(),
+		CreatedAt:    spanner.CommitTimestamp,
+		UpdatedAt:    spanner.CommitTimestamp,
+	}
+	if _, err := client.Apply(ctx, []*spanner.Mutation{sdb.Insert(ctx)}); err != nil {
+		t.Fatalf("failed to setup fixture: %s", err)
+	}
+
+	// The filter runs after the clean targets are listed, so marking the database
+	// as busy here simulates a get that happens before the database is dropped.
+	markBusy := func(listed *model.SpoolDatabase) bool {
+		busy := *listed
+		busy.ChangeState(StateBusy.Int64())
+		if _, err := client.Apply(ctx, []*spanner.Mutation{busy.Update(ctx)}); err != nil {
+			t.Fatalf("failed to update fixture: %s", err)
+		}
+		return true
+	}
+	if err := pool.Clean(ctx, markBusy); err != nil {
+		t.Fatal(err)
+	}
+	got, err := model.FindSpoolDatabase(ctx, client.Single(), sdb.DatabaseName)
+	if err != nil {
+		t.Fatalf("expected the database to be kept but got %v", err)
+	}
+	if state := State(got.State); state != StateBusy {
+		t.Errorf("expected %s but got %s", StateBusy, state)
+	}
+}
