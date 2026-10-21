@@ -1,6 +1,6 @@
 services:
   spanner-emulator:
-    image: gcr.io/cloud-spanner-emulator/emulator:1.5.29
+    image: gcr.io/cloud-spanner-emulator/emulator:1.5.59
     # docker run gcr.io/cloud-spanner-emulator/emulator ./gateway_main --help
     # docker run gcr.io/cloud-spanner-emulator/emulator ./emulator_main --helpfull
     entrypoint:
